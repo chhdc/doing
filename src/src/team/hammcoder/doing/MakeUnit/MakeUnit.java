@@ -203,6 +203,9 @@ public class MakeUnit {
 			if(IN == null) {
 				break;
 			}
+			else if(IN.equals(" ") || IN.equals("") || IN.equals("\n") || IN.equals("\r") || IN.equals("\r\n")) {
+				continue;
+			}
 			
 			
 			String buf[] = IN.split("//s+");
@@ -211,7 +214,7 @@ public class MakeUnit {
 				return 0;
 			}
 			
-			//不是end和null
+			//不是end和null或者空白字符
 			//执行指令
 			
 			if(runCommand(IN) != 0) {
@@ -236,45 +239,68 @@ public class MakeUnit {
 		
 		//shell命令
 		if(Code.length >= 2 && Code[0].equals("shell")) {
-			String sCommand[] = new String[Code.length-1];
-			boolean b=false;
-			int a=0;
+			int StringFind = Command.indexOf("shell");
+			
+			//方法1 已弃用
+			if(StringFind == -1) {
+			
+			/*String sCommand[] = new String[Code.length-1];
+			//boolean b=false;
+			//int a=0;
 			
 			//获取shell指令，去除开头的shell
-			for(String s:Code) {
-				if(b) {
-					sCommand[a] = s;
-					a++;
-				}
-				else {
-					b=true;
-					continue;
-				}
-			}
+			//for(String s:Code) {
+				//if(b) {
+					//sCommand[a] = s;
+					//a++;
+				//}
+				//else {
+					//b=true;
+					//continue;
+				//}
+			//}
 			
 			//执行
-			ps = rc.exec(sCommand);
-			int re = ps.waitFor();
+			//ps = rc.exec(sCommand);
+			//int re = ps.waitFor();
 			
-			System.out.println(Command + ":" + re);
-			return re;
+			//System.out.println(Command + ":" + re);*/
+				
+				System.out.println("error:shell command useage error in:" + row);
+			return -1;
+			}
+			
+			//方法2 推荐方法
+			else {
+				StringFind += 6;//"shell "占用6个位置
+				
+				ps = rc.exec(Command.substring(StringFind));
+				int re = ps.waitFor();
+				
+				System.out.println(Command.substring(StringFind) + ":" + re);
+				
+				return re;
+			}
 		}
+		
 		
 		//call调用指令
 		else if(Code.length == 2 && Code[0].equals("call")) {
 			return runUnit(globalFile,Code[1]);
 		}
 		
+		
 		// #注释，跳过
 		else if(Code.length >= 1 && Code[0].equals("#")) {
 			return 0;
 		}
 		
+		
 		//access 文件访问指令
-		else if(Code.length ==2 && Code[0].equals("access")) {
-			File f = new File(Code[1]);
+		else if(Code.length >=2 && Code[0].equals("access")) {
+			File f = new File(CutString(Command,"access",1));
 			if(!f.exists()) {
-				System.out.println("error:File Not Found:" + Code[1]);
+				System.out.println("error:File Not Found:" + CutString(Command,"access",1));
 				System.exit(-1);
 				return -1;
 			}
@@ -285,18 +311,16 @@ public class MakeUnit {
 		
 		
 		//accdir 目录访问指令
-		else if(Code.length == 2 && Code[0].equals("accdir")) {
-			File f = new File(Code[1]);
+		else if(Code.length >= 2 && Code[0].equals("accdir")) {
+			File f = new File(CutString(Command,"accdir",1));
 			if(!f.exists() || !f.isDirectory()) {
-				System.out.println("error:Dir Not Found:" + Code[1]);
+				System.out.println("error:Dir Not Found:" + CutString(Command,"accdir",1));
 				System.exit(-1);
 				return -1;
 			}
 			else {
 				return 0;
 			}
-			
-			
 			
 		}
 		
@@ -309,6 +333,24 @@ public class MakeUnit {
 		}
 		
 	}
+	
+	
+	
+	//根据指令截断字符串
+	public String CutString(String src,String Cut,int add) {
+		int re = src.indexOf(Cut);
+		String res = null;
+		
+		if(re == -1) {
+			return res;
+		}
+		
+		re += Cut.length()+add;
+		
+		
+		return src.substring(re);
+	}
+	
 	
 	
 }
