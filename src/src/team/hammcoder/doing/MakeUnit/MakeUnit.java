@@ -1,6 +1,7 @@
 
 package team.hammcoder.doing.MakeUnit;
 import java.io.*;
+import java.util.Scanner;
 
 /*
  * 构建文件
@@ -18,7 +19,13 @@ public class MakeUnit {
 	//unit变量
 	public String unit[];
 	
+	//文件名称
 	private String globalFile;
+	
+	//返回值定义
+	public final int OK = 0;
+	public final int ERROR = -1;
+	
 	
 	//构建文件
 	public int Make(String file) {
@@ -48,7 +55,7 @@ public class MakeUnit {
 		//没有Main则打印警告退出
 		if(!IFMain) {
 			System.out.println("error:not find Main unit");
-			return -1;
+			return ERROR;
 		}
 		
 		
@@ -59,17 +66,17 @@ public class MakeUnit {
 		catch(FileNotFoundException e) {
 			System.out.println("error:File Not Found");
 			e.printStackTrace();
-			return -1;
+			return ERROR;
 		}
 		catch(IOException e) {
 			System.out.println("error:IO error");
 			e.printStackTrace();
-			return -1;
+			return ERROR;
 		}
 		catch(InterruptedException e) {
 			System.out.println("error:Interrupted Exception");
 			e.printStackTrace();
-			return -1;
+			return ERROR;
 		}
 	}
 	
@@ -144,7 +151,8 @@ public class MakeUnit {
 					continue;
 				}
 				if(s.equals(Linebuf[1])) {
-					return -1;
+					BR.close();
+					return ERROR;
 				}
 			}
 			
@@ -159,7 +167,7 @@ public class MakeUnit {
 		BR.close();
 		FIS.close();
 		
-		return 0;
+		return OK;
 	}
 	
 	
@@ -177,17 +185,19 @@ public class MakeUnit {
 		//漂移至Main
 		while(true) {
 			IN = BR.readLine();
+			if(IN == null) {
+				System.out.println("Not found Unit:" + unitName);
+				BR.close();
+				return ERROR;
+			}
+			
 			String buf[] = IN.split("\\s+");
 			row++;
 			
-			if(IN == null) {
-				return -1;
-			}
 			
-			else if(buf.length == 3 && buf[0].equals("unit") && buf[1].equals(unitName) && buf[2].equals("begin")) {
+			if(buf.length == 3 && buf[0].equals("unit") && buf[1].equals(unitName) && buf[2].equals("begin")) {
 				break;
-			}
-			else {
+			} else {
 				continue;
 			}	
 
@@ -207,26 +217,27 @@ public class MakeUnit {
 				continue;
 			}
 			
-			
+			IN = IN.trim();
 			String buf[] = IN.split("//s+");
 			
 			if(buf.length == 1 && buf[0].equals("end")) {
+				BR.close();
 				return 0;
 			}
 			
 			//不是end和null或者空白字符
 			//执行指令
 			
-			if(runCommand(IN) != 0) {
-				System.out.println("warning:command return warning in:" + row);
+			if(runCommand(IN) != OK) {
+				System.out.println("warning:command return warning in:" + row + " is \"" + IN + "\"");
 			}
 			
 			
 			continue;
 		}
 		
-		
-		return 0;
+		BR.close();
+		return OK;
 	}
 	
 	
@@ -234,7 +245,7 @@ public class MakeUnit {
 	
 	//执行指令
 	public int runCommand(String Command) throws IOException, InterruptedException {
-		
+		Command = Command.trim();
 		String Code[] = Command.split("\\s+");
 		
 		//shell命令
@@ -267,7 +278,7 @@ public class MakeUnit {
 			//System.out.println(Command + ":" + re);*/
 				
 				System.out.println("error:shell command useage error in:" + row);
-			return -1;
+			return ERROR;
 			}
 			
 			//方法2 推荐方法
@@ -292,7 +303,7 @@ public class MakeUnit {
 		
 		// #注释，跳过
 		else if(Code.length >= 1 && Code[0].equals("#")) {
-			return 0;
+			return OK;
 		}
 		
 		
@@ -301,11 +312,10 @@ public class MakeUnit {
 			File f = new File(CutString(Command,"access",1));
 			if(!f.exists()) {
 				System.out.println("error:File Not Found:" + CutString(Command,"access",1));
-				System.exit(-1);
-				return -1;
+				return ERROR;
 			}
 			else{
-				return 0;
+				return OK;
 			}
 		}
 		
@@ -315,21 +325,79 @@ public class MakeUnit {
 			File f = new File(CutString(Command,"accdir",1));
 			if(!f.exists() || !f.isDirectory()) {
 				System.out.println("error:Dir Not Found:" + CutString(Command,"accdir",1));
-				System.exit(-1);
-				return -1;
+				return ERROR;
 			}
 			else {
-				return 0;
+				return OK;
 			}
 			
 		}
 		
 		
+		//exit 退出程序
+		else if(Code.length == 1 && Code[0].equals("exit")) {
+			System.out.println("exit the build");
+			System.exit(OK);
+			return OK;
+		}
+		
+		
+		//errexit 执行退出
+		else if(Code.length >= 2 && Code[0].equals("errexit")) {
+			if(runCommand(CutString(Command,"errexit",1)) == ERROR) {
+				System.out.println("exit the build");
+				System.exit(ERROR);
+				return ERROR;
+			}
+			else {
+				return OK;
+			}
+		}
+		
+		
+		//print 打印字符
+		else if(Code.length >= 2 && Code[0].equals("print")) {
+			System.out.println(CutString(Command,"print",1));
+			return OK;
+		}
+		
+		
+		//errcall 错误调用
+		else if(Code.length >= 3 && Code[0].equals("errcall")) {
+			if(runCommand(CutString(CutString(Command,"errcall",1),Code[1],1)) == ERROR) {
+				return runUnit(globalFile,Code[1]);
+			}
+			else{
+				return OK;
+			}
+		}
+		
+		
+		//not 位反
+		else if(Code.length >=2 && Code[0].equals("not")) {
+			if(runCommand(CutString(Command,"not",1))==ERROR) {
+				return OK;
+			}
+			else {
+				return ERROR;
+			}
+		}
+		
+		//runin 执行用户指定unit
+		else if(Code.length == 1 && Code[0].equals("runin")) {
+			Scanner in = new Scanner(System.in);
+			int re = runUnit(globalFile,in.next());
+			in.close();
+			return re;
+		}
+		
+		
+		
 		
 		//未找到指令
 		else {
-			System.out.println("error:Command not Found in:" + row);
-			return -1;
+			System.out.println("error:Command not Found in:" + row + " is \"" + Command + "\"");
+			return ERROR;
 		}
 		
 	}

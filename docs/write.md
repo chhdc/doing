@@ -18,5 +18,11 @@
  | shell   | 执行一条shell指令  | shell gcc Main.c -o Main |
  | end     | 在每个unit结束时调用，也用于返回父unit | end |
  | call    | 调用一个unit | call Main |
- | access  | 检测文件是否存在，不存在就退出 | access Main.c |
- | accdir  | 检测目录是否存在，不存在就退出 | accdir /include |
+ | access  | 检测文件是否存在，不存在就返回error | access Main.c |
+ | accdir  | 检测目录是否存在，不存在就返回error | accdir /include |
+ | exit    | 退出构建程序 | exit |
+ | errexit | 执行后一条指令，返回error就退出程序 | errexit access Main.c |
+ | print   | 打印后面跟着的任何字符,自动添加换行符 | print Hallo World |
+ | errcall | 跟上一个unit名称和一条指令，指令返回error则执行指定unit | errcall close gcc Main.c |
+ | not     | 将跟着的指令的返回结果进行反运算，error->ok  ok->error | errexit not access not |
+ | runin   | 根据用户的输入执行unit，返回unit执行结果 | runin |

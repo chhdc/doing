@@ -10,12 +10,14 @@ public class Main {
 	
 	
 	public static void main(String[] args) {
+		double startTime = System.currentTimeMillis();
+		
 		if(args.length == 0) {
 			System.out.println("Not input data\nInput doing help get help");
 			return;
 		}
 		
-		if(args[0].equals("help")) {
+		if(args.length==1 && args[0].equals("help")) {
 			System.out.println("Doing version B0.1.0\n"
 					+ "usage: doing [Command] File\n"
 					+ "Command list:\n"
@@ -26,18 +28,28 @@ public class Main {
 		
 		
 		
-		else if(args.length == 2 && args[0].equals("make")) {
-			if(make.Make(args[1]) == -1) {
+		else if(args.length >= 1 && args[0].equals("make")) {
+			String makefile = "make.doing";
+			
+			if(args.length >= 2) {
+				makefile = args[1];
+			}
+			
+			
+			if(make.Make(makefile) == make.ERROR) {
 				System.out.println("error in:" + make.row);
 				System.out.println("build failure");
 				return;
 			}
-			System.out.println("build success");
+			
+			double endTime = System.currentTimeMillis();
+			System.out.println("build success\n" + 
+			"Use " + ((endTime - startTime)/1000) + " S");
 			return;
 		}
 		
 		else {
-			System.out.println("Command not found");
+			System.out.println("Command not found or Insufficient parameters");
 			return;
 		}
 		
