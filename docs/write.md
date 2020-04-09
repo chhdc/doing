@@ -26,3 +26,12 @@
  | errcall | 跟上一个unit名称和一条指令，指令返回error则执行指定unit | errcall close gcc Main.c |
  | not     | 将跟着的指令的返回结果进行反运算，error->ok  ok->error | errexit not access not |
  | runin   | 根据用户的输入执行unit，返回unit执行结果 | runin |
+
+ ### doing特性
+ 把 / 添加在命令末尾，即可断行命令  
+ 如：  
+ uniy Main begin  
+ print Hallo  /   
+ World  
+ end  
+ 以上指令输出Hallo World

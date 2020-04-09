@@ -209,6 +209,7 @@ public class MakeUnit {
 		while(true) {
 			IN = BR.readLine();
 			row++;
+			IN = IN.trim();
 			
 			if(IN == null) {
 				break;
@@ -217,13 +218,24 @@ public class MakeUnit {
 				continue;
 			}
 			
-			IN = IN.trim();
 			String buf[] = IN.split("//s+");
 			
 			if(buf.length == 1 && buf[0].equals("end")) {
 				BR.close();
 				return 0;
 			}
+			
+			//判断末尾是否是 /
+			//是则再读取一行
+			if(IN.substring(IN.length()-1).equals("/")) {
+				row++;
+				String bufs = BR.readLine();
+				bufs = bufs.trim();
+				IN = IN.substring(0, IN.length()-2) + bufs;
+			}
+					
+			
+			
 			
 			//不是end和null或者空白字符
 			//执行指令
