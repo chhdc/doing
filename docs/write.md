@@ -35,3 +35,18 @@
  World  
  end  
  以上指令输出Hallo World
+
+ ### doing多线程
+doing可以通过   
+together unitName   
+来多线程执行unit   
+一个unit最多只能有一个线程执行   
+
+test unitName   
+来测试unit是否执行完成     
+执行完成或不存在返回error   
+
+break unitName  
+来中断一个线程
+
+

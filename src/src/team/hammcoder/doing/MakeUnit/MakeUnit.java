@@ -2,6 +2,7 @@
 package team.hammcoder.doing.MakeUnit;
 import java.io.*;
 import java.util.Scanner;
+import team.hammcoder.doing.thread.*;
 
 /*
  * 构建文件
@@ -12,6 +13,8 @@ public class MakeUnit {
 	//运行时
 	private Runtime rc=Runtime.getRuntime();
 	private Process ps;
+	
+	
 	
 	//文件行数
 	public long row=0;
@@ -26,6 +29,9 @@ public class MakeUnit {
 	public final int OK = 0;
 	public final int ERROR = -1;
 	
+	
+	//线程
+	private MakeThread makeT[];
 	
 	//构建文件
 	public int Make(String file) {
@@ -57,6 +63,14 @@ public class MakeUnit {
 			System.out.println("error:not find Main unit");
 			return ERROR;
 		}
+		
+		
+		//构建线程
+		if(BuildThread() == ERROR) {
+			System.out.println("error:build thread error");
+			return ERROR;
+		}
+		
 		
 		
 		//执行Main
@@ -404,6 +418,51 @@ public class MakeUnit {
 		}
 		
 		
+		//together构建线程
+		else if(Code.length == 2 && Code[0].equals("together")) {
+			if(makeT[getUnitPtr(Code[1])].t != null && makeT[getUnitPtr(Code[1])].t.isAlive() == true) {
+				System.out.println("Thread error:The thread is running : " + Code[1]);
+				return ERROR;
+			}
+			
+			else {
+				makeT[getUnitPtr(Code[1])].start();
+			}
+			return OK;
+		}
+		
+		
+		//test 测试线程
+		else if(Code.length == 2 && Code[0].equals("test")) {
+			if(makeT[getUnitPtr(Code[1])].t == null	) {
+				return ERROR;
+			}
+			
+			if(makeT[getUnitPtr(Code[1])].t.isAlive() == true) {
+				return OK;
+			}
+			else {
+				return ERROR;
+			}
+		}
+		
+		
+		//break 中断线程
+		else if(Code.length == 2 && Code[0].equals("break")) {
+			if(makeT[getUnitPtr(Code[1])].t == null && makeT[getUnitPtr(Code[1])].t.isAlive() == false) {
+				return OK;
+			}
+			else {
+				makeT[getUnitPtr(Code[1])].t.interrupt();
+				return OK;
+			}
+		}
+		
+		
+		
+		
+		
+		
 		
 		
 		//未找到指令
@@ -432,5 +491,38 @@ public class MakeUnit {
 	}
 	
 	
+	
+	//构造线程模型
+	public int BuildThread() throws IOException {
+		if(checking(globalFile) == ERROR) {
+			return ERROR;
+		}
+		
+		int a=0;
+		makeT = new MakeThread[unit.length];
+		for(String S:unit) {
+			makeT[a] = new MakeThread(globalFile,S);
+			a++;
+		}
+		
+		return OK;
+	}
+	
+	
+	//获取unit索引
+	public int getUnitPtr(String unitName) {
+		int a=0;
+		for(String s:unit) {
+			if(s.equals(unitName)) {
+				return a;
+			}
+			else {
+				a++;
+			}
+		}
+		
+		return ERROR;
+	}
+
 	
 }
