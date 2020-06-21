@@ -1,5 +1,4 @@
-$define Hallo Fuck§You
-$define Fuck FuckToo§
-$define You YouToo§s
+$include head.doing
+# Test
 Hallo
-
+ 

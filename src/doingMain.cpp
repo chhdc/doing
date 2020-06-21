@@ -3,7 +3,7 @@
  * Coder: chhd
  * Date: 2020.6.12
  * Version: 0.1.0
- * Update: 2020.6.12
+ * Update: 2020.6.19
 */ 
 
 #include <string>
@@ -16,6 +16,7 @@
 #include <string.h>
 #include "directive.cpp"
 #include "include/head.hpp"
+#include "Unit.hpp"
 
 int doing(std::string);
 
@@ -38,14 +39,20 @@ int doing(std::string f){
     }
 
     Handle.close();
+    //读取文件
 
 
-    //Read End Then directive (Pretreatment)
+    //预处理
     if(directive(text) != RETURN_SUCCESS){
         std::cout << PRINT_SET_RED << "directive error" << PRINT_SET_NULL << std::endl;
         return (willReturn=RETURN_ERROR);
     }
+    
+    for(auto ss:text){
+    std::cout << ss <<std::endl;
+}
 
-
-return willReturn;
+    //执行
+    Unit main("main");
+return main.run(text);
 }

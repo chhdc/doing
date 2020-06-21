@@ -3,7 +3,7 @@
  * Coder: chhd
  * Date: 2020.6.12
  * Version: 0.1.0
- * Update: 2020.6.12
+ * Update: 2020.6.19
 */ 
 
 #include "include/head.hpp"
@@ -17,8 +17,8 @@
 std::vector<std::string> CharArrayToStringVector(int argc,char * argv[]);
 void doing_err(int code);
 
-clock_t startTime;
-clock_t endTime;
+time_t startTime;
+time_t endTime;
 
 int main(int argc,char * argv[]){
 
@@ -38,14 +38,14 @@ int main(int argc,char * argv[]){
         << PRINT_SET_NULL;
     }
 
-    //Doing begin
+    //开始构建
     else if(args.size() == 1){
-        startTime = clock();
+        startTime = time(&startTime);
         doing_err(doing(args[0]));
     }
 
     else if(args.size() == 0){
-        startTime = clock();
+        startTime = time(&startTime);
         doing_err(doing("make.doing"));
     }
 
@@ -58,7 +58,7 @@ int main(int argc,char * argv[]){
 return EXIT_SUCCESS;
 }
 
-//This sure use at Main()
+//main一次性函数
 std::vector<std::string> CharArrayToStringVector(int argc,char * argv[]){
     std::vector<std::string> OUT;
     int a = 0;
@@ -70,21 +70,19 @@ std::vector<std::string> CharArrayToStringVector(int argc,char * argv[]){
     return OUT;
 }
 
-//use it make error info and out 
+//打印error
 void doing_err(int code){
+    endTime = time(&endTime);
     if(code == RETURN_SUCCESS){
-        endTime = clock();
-        std::cout << "Build End:success use " << (double)((double)endTime - (double)startTime) << "ms" << std::endl;
+        std::cout << "Build End:success use " << (double)((double)endTime - (double)startTime) << "s" << std::endl;
         return;
     }
     else if(code == RETURN_WRONG){
-        endTime = clock();
-        std::cout << PRINT_SET_YELLOW << "Build End:wrong use " << (double)((double)endTime - (double)startTime) << "ms" << PRINT_SET_NULL << std::endl;
+        std::cout << PRINT_SET_YELLOW << "Build End:wrong use " << (double)((double)endTime - (double)startTime) << "s" << PRINT_SET_NULL << std::endl;
         return;
     }
     else if(code == RETURN_ERROR){
-        endTime = clock();
-        std::cout << PRINT_SET_RED << "Build End:FAILURE use " << (double)((double)endTime - (double)startTime) << "ms" << PRINT_SET_NULL << std::endl;
+        std::cout << PRINT_SET_RED << "Build End:FAILURE use " << (double)((double)endTime - (double)startTime) << "s" << PRINT_SET_NULL << std::endl;
         return;
     }
 
